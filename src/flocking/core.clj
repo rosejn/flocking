@@ -49,13 +49,22 @@
                :dx dx
                :dy dy))))))
 
+(defn angle [dx dy]
+  ; 1.25 and 0.75 are 'fudges' because triangle is drawn pointing to
+  ; BL corner
+  (let [theta (asin (/ dy (mag dx dy)))
+        theta2 (if (pos? dx) (+ (* 1.25 PI ) theta) (- theta (* 0.75 PI)))]
+    theta2))
+
 (defn draw []
   (background 100)
   (swap! (state :boids) update-boids)
   (fill 255 50 50)
 
-  (doseq [{:keys [x y]} @(state :boids)]
-    (triangle x y (+ x 10) (+ y 10) (+ x 10) (- y 10))))
+  (doseq [{:keys [x y dx dy]} @(state :boids)]
+    (with-translation [x y]
+      (with-rotation [(angle dx dy)]
+        (triangle 0 0 10 10 10 -10)))))
 
 (defn mouse-moved []
     (let [  x (mouse-x)
