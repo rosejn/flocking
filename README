@@ -2,6 +2,14 @@
 
 Boids style.
 
+
+To watch the birds fly run:
+
+$ lein run
+
+Click and move the mouse to have them follow you around.
+
+
 Copyright (C) 2012 London Clojurians
 
 Distributed under the Eclipse Public License, the same as Clojure.

@@ -21,7 +21,7 @@
   (set-state!   :mousepos (atom [(/ CANVAS 2) (/ CANVAS 2)])
                 :boids (atom (take NUM-BOIDS (repeatedly make-boid))))
   (background 200))
-  
+
 (defn bound
     [val]
     (if (> val MAX_SPEED) MAX_SPEED (if (< val (- MAX_SPEED)) (- MAX_SPEED) val)))
@@ -50,10 +50,10 @@
                :dy dy))))))
 
 (defn angle [dx dy]
-  ; 1.25 and 0.75 are 'fudges' because triangle is drawn pointing to
-  ; BL corner
-  (let [theta (asin (/ dy (mag dx dy)))
-        theta2 (if (pos? dx) (+ (* 1.25 PI ) theta) (- theta (* 0.75 PI)))]
+  (let [theta (atan (/ dy dx))
+        theta2 (if (pos? dx)
+                 (- theta)
+                 theta)]
     theta2))
 
 (defn draw []
@@ -61,19 +61,23 @@
   (swap! (state :boids) update-boids)
   (fill 255 50 50)
 
-  (doseq [{:keys [x y dx dy]} @(state :boids)]
+  (doseq [[index {:keys [x y dx dy]}] (map vector
+                                           (iterate inc 0)
+                                           @(state :boids))]
     (with-translation [x y]
       (with-rotation [(angle dx dy)]
-        (triangle 0 0 10 10 10 -10)))))
+        (let [span (+ 8 (* 8 (Math/pow (sin (* 0.1 (+ (* 10 index) (frame-count)))) 2)))]
+          (triangle 0 0 span span span (- span)))))))
 
 (defn mouse-moved []
     (let [  x (mouse-x)
             y (mouse-y)]
             (reset! (state :mousepos) [x y])))
 
-(defsketch example
-  :title "Flocking"
-  :setup setup
-  :mouse-moved mouse-moved
-  :draw draw :size [CANVAS CANVAS])
+(defn -main
+  []
+  (sketch :title "Flocking"
+          :setup setup
+          :mouse-moved mouse-moved
+          :draw draw :size [CANVAS CANVAS]))
 
